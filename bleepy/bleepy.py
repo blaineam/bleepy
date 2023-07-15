@@ -76,7 +76,7 @@ class MediaFile(File):
     def __init__(self):
         """Init Media File"""
         super().__init__()
-        self.__allowed_extensions = {"mp4","mp3"}
+        self.__allowed_extensions = {"mov","webm","mp4","mp3"}
         self.__extension = ""
         self.__duration = 0.0
 
@@ -189,7 +189,7 @@ class VideoFile(MediaFile):
     def __init__(self):
         """Init Video file"""
         super().__init__()
-        self.set_allowed_exts({"mp4","mpeg","mkv"})
+        self.set_allowed_exts({"mp4","mpeg","mkv","webm","mov"})
 
 class AudioFile(MediaFile):
     """AudioFile is a mediafile"""
@@ -545,9 +545,9 @@ class ProfanityBlocker:
 
                     txtnoprofanity = (
                         f"ffmpeg -i \"{file_location}\" -ss {laststart}"+
-                        f" -t {wordduration} -c:v h264_nvenc {clipinfo['name']}")
+                        f" -t {wordduration} -c:v libx264 -c:a aac {clipinfo['name']}")
 
-                    vidprocess = subprocess.Popen(txtnoprofanity, stdout=subprocess.PIPE)
+                    vidprocess = subprocess.Popen(txtnoprofanity, stdout=subprocess.PIPE, shell=True)
 
                     self.run_subprocess(vidprocess)
 
@@ -560,7 +560,7 @@ class ProfanityBlocker:
                 "isProfanity":True
             }
 
-            txtprofanity = "ffmpeg -i \"{}\" -ss {} -t {} -c:v h264_nvenc {}"
+            txtprofanity = "ffmpeg -i \"{}\" -ss {} -t {} -c copy {}"
 
             templaststart = float(word["end"])
             if (videoduration - templaststart) < 1:
@@ -584,7 +584,7 @@ class ProfanityBlocker:
                     )
                 laststart = float(word["end"])
 
-            vidprocess = subprocess.Popen(txtprofanity, stdout=subprocess.PIPE)
+            vidprocess = subprocess.Popen(txtprofanity, stdout=subprocess.PIPE, shell=True)
             self.run_subprocess(vidprocess)
 
             if os.path.exists(clipinfo["name"]):
@@ -601,9 +601,9 @@ class ProfanityBlocker:
             duration = round((videoduration-laststart),2)
             lastclip = (
                 f"ffmpeg -i \"{file_location}\" -ss {laststart}"+
-                f" -t {duration} -c:v h264_nvenc {clipinfo['name']}")
+                f" -t {duration} -c:v libx264 -c:a aac {clipinfo['name']}")
 
-            vidprocess = subprocess.Popen(lastclip, stdout=subprocess.PIPE)
+            vidprocess = subprocess.Popen(lastclip, stdout=subprocess.PIPE, shell=True)
             self.run_subprocess(vidprocess)
 
             if os.path.exists(clipinfo["name"]):
@@ -632,10 +632,10 @@ class ProfanityBlocker:
                 replacename = f"{self.get_clips_directory()}replaced{uuid.uuid4()}.{file_ext}"
                 txtreplaced = (
                     f"ffmpeg -i {clip['name']} -i \"{audio_file_location}\""+
-                    f" -map 0:v -map 1:a -c:v copy -shortest {replacename}")
+                    f" -map 0:v? -map 1:a -c:v libx264 -c:a aac -shortest {replacename}")
 
 
-                vidprocess = subprocess.Popen(txtreplaced, stdout=subprocess.PIPE)
+                vidprocess = subprocess.Popen(txtreplaced, stdout=subprocess.PIPE, shell=True)
                 self.run_subprocess(vidprocess)
 
                 print(txtreplaced)
@@ -668,9 +668,9 @@ class ProfanityBlocker:
 
         blockfilename = f"{self.get_save_directory()}blocked{uuid.uuid4()}.{file_ext}"
 
-        txtconcat = f"ffmpeg -safe 0 -f concat -i \"{txtfilename}\" -c copy \"{blockfilename}\""
+        txtconcat = f"ffmpeg -safe 0 -f concat -i \"{txtfilename}\" -c:v libx264 -profile:v main -level 3.0 -pix_fmt yuv420p -movflags faststart -dn -sn -ignore_unknown -c:a aac -ac 2 -b:a 192k \"{blockfilename}\""
 
-        vidprocess = subprocess.Popen(txtconcat, stdout=subprocess.PIPE)
+        vidprocess = subprocess.Popen(txtconcat, stdout=subprocess.PIPE, shell=True)
         self.run_subprocess(vidprocess)
 
         print(txtconcat)

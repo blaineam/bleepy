@@ -1,0 +1,9 @@
+services:
+  bleepy:
+    image: bleepy:latest
+    build:
+      context: .
+    volumes:
+      - ./data/output:/data/output
+      - ./data/input/bleep.mp3:/data/input/bleep.mp3
+      - ./data/input/video.mov:/data/input/video.mp4
