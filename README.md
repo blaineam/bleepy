@@ -4,13 +4,13 @@
 Bleepy is a Python program that can block Tagalog and English profanity in audio and videos.
 
 # Docker Setup
-1. git clone this repo
-2. cd into this repo
-3. mkdir -p data/input
-4. cp <path-to-your-video-file> data/input/video.mov
-5. cp <path-to-your-bleep-audio-file-that-will-overwrite-the-audio-of-detected-profanity> data/input/bleep.mp3
-6. docker compose up
-7. docker compose down when it completes
+1. `git clone ...` this repo
+2. `cd ...` into this repo
+3. `mkdir -p data/input`
+4. `cp <path-to-your-video-file> data/input/video.mov`
+5. `cp <path-to-your-bleep-audio-file-that-will-overwrite-the-audio-of-detected-profanity> data/input/bleep.mp3`
+6. `docker compose up`
+7. `docker compose down` when it completes
 
 # Manual Setup
 ## Requirements
