@@ -1,4 +1,4 @@
-![Bleepy Mascott](https://github.com/blaineam/bleepy/blob/main/bleepy.png?raw=true)
+<img src="https://github.com/blaineam/bleepy/blob/main/bleepy.png?raw=true" width="300" height="auto" alt="bleepy mascott" />
 
 # bleepy
 Bleepy is a Python program that can block Tagalog and English profanity in audio and videos.
