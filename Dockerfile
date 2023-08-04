@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.9-bookworm
 
 RUN apt-get -y update
 RUN apt-get -y upgrade

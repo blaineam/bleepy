@@ -7,9 +7,7 @@ import uuid  # create unique random id
 from profanity_check import predict, predict_prob
 from vosk import KaldiRecognizer, Model, SetLogLevel
 
-# import wave
-
-
+hdrflags = f" -c:v libx264 -hide_banner -nostdin  -fflags +genpts -c:a aac -vf \"zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p\" "
 
 class File:
     """Abstraction for file"""
@@ -313,13 +311,9 @@ class SpeechToText():
                 break
             if rec.AcceptWaveform(data):
                 result = rec.Result()
-                print(result)
                 self.add_result(result)
-            else:
-                print(rec.PartialResult())
 
         finalresult = rec.FinalResult()
-        print(finalresult)
         self.add_result(finalresult)
 
 class ProfanityDetector():
@@ -545,7 +539,7 @@ class ProfanityBlocker:
 
                     txtnoprofanity = (
                         f"ffmpeg -i \"{file_location}\" -ss {laststart}"+
-                        f" -t {wordduration} -c:v libx264 -c:a aac {clipinfo['name']}")
+                        f" -t {wordduration} {hdrflags} {clipinfo['name']}")
 
                     vidprocess = subprocess.Popen(txtnoprofanity, stdout=subprocess.PIPE, shell=True)
 
@@ -588,7 +582,7 @@ class ProfanityBlocker:
             self.run_subprocess(vidprocess)
 
             if os.path.exists(clipinfo["name"]):
-                print(txtprofanity)
+                # print(txtprofanity)
                 clips.append(clipinfo)
 
 
@@ -601,13 +595,14 @@ class ProfanityBlocker:
             duration = round((videoduration-laststart),2)
             lastclip = (
                 f"ffmpeg -i \"{file_location}\" -ss {laststart}"+
-                f" -t {duration} -c:v libx264 -c:a aac {clipinfo['name']}")
+                f" -t {duration} {hdrflags} {clipinfo['name']}")
+
 
             vidprocess = subprocess.Popen(lastclip, stdout=subprocess.PIPE, shell=True)
             self.run_subprocess(vidprocess)
 
             if os.path.exists(clipinfo["name"]):
-                print(lastclip)
+                # print(lastclip)
                 clips.append(clipinfo)
 
         self.set_clips(clips)
@@ -632,13 +627,13 @@ class ProfanityBlocker:
                 replacename = f"{self.get_clips_directory()}replaced{uuid.uuid4()}.{file_ext}"
                 txtreplaced = (
                     f"ffmpeg -i {clip['name']} -i \"{audio_file_location}\""+
-                    f" -map 0:v? -map 1:a -c:v libx264 -c:a aac -shortest {replacename}")
+                    f" -map 0:v? -map 1:a {hdrflags} -shortest {replacename}")
 
 
                 vidprocess = subprocess.Popen(txtreplaced, stdout=subprocess.PIPE, shell=True)
                 self.run_subprocess(vidprocess)
 
-                print(txtreplaced)
+                # print(txtreplaced)
                 clip["name"] = replacename
                 clips[i] = clip
 
@@ -673,7 +668,7 @@ class ProfanityBlocker:
         vidprocess = subprocess.Popen(txtconcat, stdout=subprocess.PIPE, shell=True)
         self.run_subprocess(vidprocess)
 
-        print(txtconcat)
+        # print(txtconcat)
 
         f = open(txtfilename, "a")
         f.write("\n\nDeleting Clips... \n\n")
