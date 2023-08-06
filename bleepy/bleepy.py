@@ -6,8 +6,9 @@ import uuid  # create unique random id
 
 from profanity_check import predict, predict_prob
 from vosk import KaldiRecognizer, Model, SetLogLevel
-
-hdrflags = f" -c:v libx264 -hide_banner -nostdin  -fflags +genpts -c:a aac -vf \"zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p\" "
+codec = "libx264"
+def hdrflags():
+    return f" -c:v {codec} -hide_banner -nostdin  -fflags +genpts -c:a aac -vf \"zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p\" "
 
 class File:
     """Abstraction for file"""
@@ -83,6 +84,10 @@ class MediaFile(File):
         super().set_file(file)
         self.__set_file_extension(file)
         self.__set_duration(file)
+
+    def set_codec(self, codec_override):
+        global codec
+        codec = codec_override or codec
 
     def set_allowed_exts(self, extensions):
         """
@@ -539,7 +544,7 @@ class ProfanityBlocker:
 
                     txtnoprofanity = (
                         f"ffmpeg -i \"{file_location}\" -ss {laststart}"+
-                        f" -t {wordduration} {hdrflags} {clipinfo['name']}")
+                        f" -t {wordduration} {hdrflags()} {clipinfo['name']}")
 
                     vidprocess = subprocess.Popen(txtnoprofanity, stdout=subprocess.PIPE, shell=True)
 
@@ -554,7 +559,7 @@ class ProfanityBlocker:
                 "isProfanity":True
             }
 
-            txtprofanity = "ffmpeg -i \"{}\" -ss {} -t {} -c copy {}"
+            txtprofanity = "ffmpeg -i \"{}\" -ss {} -t {} " + hdrflags() + " {}"
 
             templaststart = float(word["end"])
             if (videoduration - templaststart) < 1:
@@ -595,7 +600,7 @@ class ProfanityBlocker:
             duration = round((videoduration-laststart),2)
             lastclip = (
                 f"ffmpeg -i \"{file_location}\" -ss {laststart}"+
-                f" -t {duration} {hdrflags} {clipinfo['name']}")
+                f" -t {duration} {hdrflags()} {clipinfo['name']}")
 
 
             vidprocess = subprocess.Popen(lastclip, stdout=subprocess.PIPE, shell=True)
@@ -627,7 +632,7 @@ class ProfanityBlocker:
                 replacename = f"{self.get_clips_directory()}replaced{uuid.uuid4()}.{file_ext}"
                 txtreplaced = (
                     f"ffmpeg -i {clip['name']} -i \"{audio_file_location}\""+
-                    f" -map 0:v? -map 1:a {hdrflags} -shortest {replacename}")
+                    f" -map 0:v? -map 1:a {hdrflags()} -shortest {replacename}")
 
 
                 vidprocess = subprocess.Popen(txtreplaced, stdout=subprocess.PIPE, shell=True)

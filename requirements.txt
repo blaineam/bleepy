@@ -14,5 +14,5 @@ srt==3.5.2
 threadpoolctl==3.1.0
 tqdm==4.64.1
 urllib3==1.26.14
-vosk==0.3.45
+vosk==0.3.44
 websockets==10.4
